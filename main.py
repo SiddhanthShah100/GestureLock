@@ -24,7 +24,7 @@ def preprocess_image(frame):
     result = hands.process(rgb_frame)
 
     if result.multi_hand_landmarks:
-        for hand_landmarks in result.multi_hand_landmarks:            
+        for hand_landmarks in result.multi_hand_landmarks:
             h, w, _ = frame.shape
             x_min = int(min(lm.x for lm in hand_landmarks.landmark) * w)
             y_min = int(min(lm.y for lm in hand_landmarks.landmark) * h)
@@ -38,7 +38,7 @@ def preprocess_image(frame):
             y_max = min(h, y_max + margin)
 
             cropped_hand = frame[y_min:y_max, x_min:x_max]
-             
+
             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
             return cropped_hand, frame
@@ -48,7 +48,7 @@ def preprocess_image(frame):
 def normalize_landmarks(landmarks):
     """Normalize landmarks to remove effects of translation, scale, and rotation."""
     landmarks = np.array(landmarks)
-    
+
     mean = np.mean(landmarks, axis=0)
     centered = landmarks - mean
 
@@ -61,7 +61,7 @@ def normalize_landmarks(landmarks):
     covariance_matrix = np.cov(scaled[:, :2].T)
     eig_vals, eig_vecs = np.linalg.eig(covariance_matrix)
     principal_axis = eig_vecs[:, np.argmax(eig_vals)]
-    
+
     rotation_matrix = np.array([[principal_axis[0], -principal_axis[1]],
                                  [principal_axis[1], principal_axis[0]]])
     aligned = np.dot(scaled[:, :2], rotation_matrix)
@@ -134,7 +134,7 @@ def decrypt_content(gesture_file):
     """Decrypt the content using the gesture file as the key."""
     with open(gesture_file, 'rb') as img_file:
         img_data = img_file.read()
-    
+
     hashed_key = base64.urlsafe_b64encode(img_data[:32].ljust(32, b'\0'))
     cipher = Fernet(hashed_key)
 
@@ -168,7 +168,7 @@ def open_notepad_and_encrypt(gesture_file):
         if content:
             with open(gesture_file, 'rb') as img_file:
                 img_data = img_file.read()
-            
+
             hashed_key = base64.urlsafe_b64encode(img_data[:32].ljust(32, b'\0'))
             cipher = Fernet(hashed_key)
 
@@ -208,11 +208,14 @@ def main():
         elif keyboard.is_pressed('r'):
             print("Start capturing password gesture")
             password_gesture = capture_gesture("password_gesture.npy", "password_gesture.png")
-            if compare_gestures(stored_gesture, password_gesture):
-                print("Gesture matched! Opening Notepad with decrypted content...")
-                open_notepad_and_decrypt(stored_gesture)
+            if stored_gesture:
+                if compare_gestures(stored_gesture, password_gesture):
+                    print("Gesture matched! Opening Notepad with decrypted content...")
+                    open_notepad_and_decrypt(stored_gesture)
+                else:
+                    print("Gesture did not match!")
             else:
-                print("Gesture did not match!")
+                print("No stored gesture to compare with!")
 
         if keyboard.is_pressed('esc'):
             print("Exiting program.")
