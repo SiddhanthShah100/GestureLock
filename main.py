@@ -24,7 +24,7 @@ def preprocess_image(frame):
     result = hands.process(rgb_frame)
 
     if result.multi_hand_landmarks:
-        for hand_landmarks in result.multi_hand_landmarks:
+        for hand_landmarks in result.multi_hand_landmarks:            
             h, w, _ = frame.shape
             x_min = int(min(lm.x for lm in hand_landmarks.landmark) * w)
             y_min = int(min(lm.y for lm in hand_landmarks.landmark) * h)
@@ -38,7 +38,7 @@ def preprocess_image(frame):
             y_max = min(h, y_max + margin)
 
             cropped_hand = frame[y_min:y_max, x_min:x_max]
-
+             
             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
             return cropped_hand, frame
